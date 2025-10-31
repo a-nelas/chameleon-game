@@ -5,49 +5,65 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Chameleon (with Salamanders)</title>
   <style>
-    :root { --bg:#0b1020; --panel:#131a31; --muted:#9aa7c7; --text:#e9eefc; --radius:14px; }
-    html,body{height:100%}
-    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
-      background:radial-gradient(1200px 800px at 10% 10%, #122044 0, var(--bg) 60%), var(--bg); color:var(--text);}
-    .container{max-width:980px;margin:0 auto;padding:28px 16px 60px;}
-    h1{font-size:clamp(24px,3vw,36px);margin:0 0 8px;letter-spacing:.4px}
-    p.sub{margin:0 0 16px;color:var(--muted)}
-    .grid{display:grid;gap:16px}
-    .two{grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media (max-width:760px){.two{grid-template-columns:1fr}}
-    .card{background:linear-gradient(180deg,#151b36 0%,var(--panel) 100%);border:1px solid #25305a;border-radius:var(--radius);padding:16px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
-    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    label{font-weight:600;font-size:14px}
-    input[type="number"],input[type="text"]{background:#0f142b;color:var(--text);border:1px solid #2a3566;border-radius:10px;padding:10px 12px;outline:none;width:100%;box-sizing:border-box}
-    input[type="number"]{max-width:110px}
-    .btn{appearance:none;border:1px solid #2b59ff44;background:linear-gradient(180deg,#2844a8,#203a96);color:white;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer;transition:transform .06s ease, filter .15s ease}
-    .btn:hover{filter:brightness(1.05)} .btn:active{transform:translateY(1px)}
-    .btn.ghost{background:transparent;border-color:#3a476e;color:var(--muted)}
-    .btn.warn{background:linear-gradient(180deg,#9f2f45,#7b2234);border-color:#ff6a8b55}
-    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #2a3566;background:#0f142b;color:var(--muted);font-size:12px}
-    .list{display:grid;gap:8px}
-    .player{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:10px;border-radius:12px;background:#0f142b;border:1px solid #23305f}
-    .name{font-weight:700}
-    .reveal{font-variant-numeric:tabular-nums}
-    .muted{color:var(--muted)}
-    .tag{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid #2a3566;color:#c8d2f7;background:#0b1229;display:none}
-    .tag.cham{border-color:#5aa0ff66;color:#bcd6ff}
-    .tag.sala{border-color:#7bffb166;color:#d4ffe8}
-    .tag.norm{border-color:#ffd16666;color:#fff0c9}
-    .spacer{height:6px}
-    .title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
-    .cat{font-weight:800;letter-spacing:.5px}
-    .small{font-size:12px;color:var(--muted)}
-    .btns{display:flex;gap:8px}
+    :root {
+      --bg: #0b1020;
+      --panel: #131a31;
+      --muted: #9aa7c7;
+      --text: #e9eefc;
+      --accent: #6aa6ff;
+      --accent-2: #7bffb1;
+      --danger: #ff6a8b;
+      --warning: #ffd166;
+      --ok: #6aff9a;
+      --radius: 14px;
+    }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 10% 10%, #122044 0, var(--bg) 60%), var(--bg);
+      color: var(--text);
+    }
+    .container { max-width: 980px; margin: 0 auto; padding: 28px 16px 60px; }
+    h1 { font-size: clamp(24px, 3vw, 36px); margin: 0 0 8px; letter-spacing: 0.4px; }
+    p.sub { margin: 0 0 16px; color: var(--muted); }
+    .grid { display: grid; gap: 16px; }
+    .two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    @media (max-width: 760px) { .two { grid-template-columns: 1fr; } }
+    .card { background: linear-gradient(180deg, #151b36 0%, var(--panel) 100%); border: 1px solid #25305a; border-radius: var(--radius); padding: 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.25); }
+    .row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    label { font-weight: 600; font-size: 14px; }
+    input[type="number"], input[type="text"], select, textarea { background: #0f142b; color: var(--text); border: 1px solid #2a3566; border-radius: 10px; padding: 10px 12px; outline: none; width: 100%; box-sizing: border-box; }
+    input[type="number"] { max-width: 110px; }
+    textarea { min-height: 100px; resize: vertical; }
+    .btn { appearance: none; border: 1px solid #2b59ff44; background: linear-gradient(180deg, #2844a8, #203a96); color: white; padding: 10px 14px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: transform .06s ease, filter .15s ease; }
+    .btn:hover { filter: brightness(1.05); }
+    .btn:active { transform: translateY(1px); }
+    .btn.ghost { background: transparent; border-color: #3a476e; color: var(--muted); }
+    .btn.warn { background: linear-gradient(180deg, #9f2f45, #7b2234); border-color: #ff6a8b55; }
+    .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; border: 1px solid #2a3566; background: #0f142b; color: var(--muted); font-size: 12px; }
+    .list { display: grid; gap: 8px; }
+    .player { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: #0f142b; border: 1px solid #23305f; }
+    .name { font-weight: 700; }
+    .reveal { font-variant-numeric: tabular-nums; }
+    .muted { color: var(--muted); }
+    .tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid #2a3566; color: #c8d2f7; background: #0b1229; }
+    .tag.cham { border-color: #5aa0ff66; color: #bcd6ff; }
+    .tag.sala { border-color: #7bffb166; color: #d4ffe8; }
+    .tag.norm { border-color: #ffd16666; color: #fff0c9; }
+    .spacer { height: 6px; }
+    .title-row { display:flex; align-items:center; justify-content:space-between; gap: 10px; }
+    .cat { font-weight: 800; letter-spacing: .5px; }
+    details summary { cursor: pointer; }
+    .small { font-size: 12px; color: var(--muted); }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="title-row">
-      <h1>🦎 Chameleon (with 🦎 Salamanders)</h1>
-      <button id="btnExport" class="btn ghost" title="Download current player list & settings">Export setup</button>
+      <h1>🦎 Chameleon Game 🦎</h1>
+      
     </div>
-    <p class="sub">Pass the device. Deal a category & secret word, randomly assign a Chameleon and Salamanders (who see a different word). Players reveal their own info only.</p>
+    <p class="sub">A local, pass‑the‑device helper for the social‑deduction word game. Deal a category & secret word, randomly assign a Chameleon, and (optionally) some Salamanders who see a different word.</p>
 
     <div class="grid two">
       <section class="card" aria-labelledby="players-h">
@@ -65,6 +81,7 @@
         <div id="names" class="list" aria-live="polite"></div>
         <div class="spacer"></div>
         <div class="row">
+          <button id="btnShuffleNames" class="btn ghost" title="Shuffle player order">Shuffle names</button>
           <button id="btnClearNames" class="btn ghost" title="Clear all names">Clear</button>
         </div>
       </section>
@@ -77,9 +94,9 @@
             <div class="small" id="wordCountInfo"></div>
           </div>
           <div class="row">
-            <button id="btnDeal" class="btn">Deal round</button>
-            <button id="btnHideAll" class="btn ghost" title="Hide all reveals">Hide all</button>
-            <button id="btnNewDeck" class="btn warn" title="Pick a fresh category">New category</button>
+            <button id="btnDeal" class="btn">Play</button>
+            
+            
           </div>
         </div>
         <div class="spacer"></div>
@@ -87,36 +104,53 @@
       </section>
     </div>
 
-    <p class="small">Each player taps <em>Reveal word</em> to see their word. The Chameleon sees a blank. Tap <em>Reveal role</em> only when you want to disclose roles.</p>
-  </div>
+    <details class="card" style="margin-top:16px;">
+      <summary><strong>Custom categories (optional)</strong> — paste your own list</summary>
+      <p class="small">Format: one category per line as <code>Category: word1, word2, word3...</code>. Click <em>Import</em> to replace the built‑in list.</p>
+      <textarea id="customData" placeholder="Fruits: apple, banana, orange, peach\nAnimals: cat, dog, lion, whale"></textarea>
+      <div class="spacer"></div>
+      <div class="row">
+        <button id="btnImport" class="btn">Import</button>
+        <button id="btnExportWords" class="btn ghost">Export current wordlist</button>
+        <span class="small" id="importStatus"></span>
+      </div>
+    </details>
+
+      </div>
 
   <script>
-    // Word list is loaded from categories.json (same folder as this file)
-    let WORDLIST = {};
+    // ------------------------------
+    // Data
+    // ------------------------------
+    const DEFAULT_CATEGORIES = {
+      "Fruits": ["apple","banana","orange","grape","mango","pear","peach","kiwi","pineapple","plum","cherry","watermelon"],
+      "Animals": ["cat","dog","lion","tiger","elephant","zebra","giraffe","whale","shark","eagle","panda","koala"],
+      "Countries": ["Portugal","Spain","France","Germany","Italy","Brazil","Japan","Canada","Australia","Egypt","Norway","Mexico"],
+      "Sports": ["football","basketball","tennis","golf","rugby","cricket","volleyball","swimming","cycling","boxing","hockey","baseball"],
+      "Jobs": ["doctor","teacher","engineer","artist","chef","pilot","nurse","farmer","writer","lawyer","musician","firefighter"],
+      "Vehicles": ["car","bus","bicycle","motorcycle","train","airplane","ship","submarine","helicopter","scooter","van","truck"],
+      "Desserts": ["cake","ice cream","cookie","brownie","pie","pudding","tart","mousse","cheesecake","macaron","donut","crème brûlée"],
+      "Colors": ["red","blue","green","yellow","purple","orange","pink","brown","black","white","gray","teal"],
+      "Instruments": ["guitar","piano","violin","drums","flute","trumpet","saxophone","cello","harp","trombone","clarinet","ukulele"],
+      "Household Items": ["spoon","fork","knife","plate","glass","sofa","lamp","mirror","towel","pillow","broom","kettle"],
+      "Weather": ["rain","snow","sunny","cloudy","wind","storm","fog","hail","thunder","lightning","drizzle","breeze"]
+    };
 
-    async function loadCategories() {
-      try {
-        const url = new URL('./categories.json', window.location.href).toString();
-        const res = await fetch(url, { cache: 'no-store' });
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
-        if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid JSON format');
-        WORDLIST = data;
-      } catch (e) {
-        alert('Could not load categories.json. Make sure the file is named exactly "categories.json" and is in the same folder as index.html.\\n\\nDetails: ' + e.message);
-        WORDLIST = {};
-      }
-    }
+    let WORDLIST = structuredClone(DEFAULT_CATEGORIES);
 
+    // ------------------------------
     // State
-    let players = []; // { name, role, word, revealedWord, revealedRole }
+    // ------------------------------
+    let players = []; // { name, role, word, revealed }
     let category = null;
     let trueWord = null;
     let wrongWord = null;
 
+    // ------------------------------
     // Helpers
-    const $ = (sel, root=document)=> root.querySelector(sel);
-    const el = (tag, cls, text)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; };
+    // ------------------------------
+    function $(sel, root=document){ return root.querySelector(sel); }
+    function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
     const rand = (n)=> Math.floor(Math.random()*n);
     const choice = (arr)=> arr[rand(arr.length)];
 
@@ -133,44 +167,38 @@
         wrap.append(lab, inp);
         namesDiv.append(wrap);
       }
-      players = Array.from({length:num}, (_,i)=> ({ name: $('#name_'+i)?.value?.trim() || `Player ${i+1}`, role: 'normal', word: null, revealedWord: false, revealedRole: false }));
+      players = Array.from({length:num}, (_,i)=> ({ name: $('#name_'+i)?.value?.trim() || `Player ${i+1}`, role: 'normal', word: null, revealed: false }));
       renderPlayers();
     }
 
-    function readNames(){ players.forEach((p,i)=>{ const v = $('#name_'+i)?.value?.trim(); if(v) p.name = v; }); }
-    function shuffleInPlace(arr){ for(let i=arr.length-1;i>0;i--){ const j=rand(i+1); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+    function readNames(){
+      players.forEach((p,i)=>{ const v = $('#name_'+i)?.value?.trim(); if(v) p.name = v; });
+    }
+
+    function shuffleInPlace(arr){
+      for(let i=arr.length-1;i>0;i--){ const j=rand(i+1); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+      return arr;
+    }
 
     function renderPlayers(){
       const list = $('#playersList');
       list.innerHTML = '';
-      players.forEach((p)=>{
+      players.forEach((p, idx)=>{
         const row = el('div','player');
         const left = el('div');
         const nm = el('div','name', p.name);
         const roleTag = el('span','tag ' + (p.role==='chameleon'?'cham':(p.role==='salamander'?'sala':'norm')), p.role);
-        roleTag.style.display = p.revealedRole ? 'inline-block' : 'none';
-        const revealText = el('div','muted small reveal', p.revealedWord ? (p.word||'') : '— hidden —');
+        roleTag.style.display = (trueWord? 'inline-block':'none'); // show roles only after dealing
+        const revealText = el('div','muted small reveal', p.revealed ? (p.word||'') : '— hidden —');
         left.append(nm, roleTag, el('div',null,''), revealText);
-
-        const btnWrap = el('div','btns');
-        const btnWord = el('button','btn');
-        btnWord.textContent = p.revealedWord ? 'Hide word' : 'Reveal word';
-        btnWord.addEventListener('click', ()=>{
-          p.revealedWord = !p.revealedWord;
-          revealText.textContent = p.revealedWord ? (p.word||'') : '— hidden —';
-          btnWord.textContent = p.revealedWord ? 'Hide word' : 'Reveal word';
+        const btn = el('button','btn');
+        btn.textContent = p.revealed ? 'Hide' : 'Reveal';
+        btn.addEventListener('click', ()=>{
+          p.revealed = !p.revealed;
+          revealText.textContent = p.revealed ? (p.word||'') : '— hidden —';
+          btn.textContent = p.revealed ? 'Hide' : 'Reveal';
         });
-
-        const btnRole = el('button','btn ghost');
-        btnRole.textContent = p.revealedRole ? 'Hide role' : 'Reveal role';
-        btnRole.addEventListener('click', ()=>{
-          p.revealedRole = !p.revealedRole;
-          roleTag.style.display = p.revealedRole ? 'inline-block' : 'none';
-          btnRole.textContent = p.revealedRole ? 'Hide role' : 'Reveal role';
-        });
-
-        btnWrap.append(btnWord, btnRole);
-        row.append(left, btnWrap);
+        row.append(left, btn);
         list.append(row);
       });
 
@@ -181,10 +209,10 @@
 
     function pickCategoryAndWords(){
       const cats = Object.keys(WORDLIST);
-      if(cats.length===0){ alert('No categories available. Ensure categories.json is present.'); return; }
+      if(cats.length===0){ alert('No categories available. Import some in the Custom categories panel.'); return; }
       category = choice(cats);
       const words = WORDLIST[category];
-      if(!Array.isArray(words) || words.length < 2){ alert(`Category "${category}" needs at least 2 words for Salamanders.`); return; }
+      if(words.length < 2){ alert(`Category "${category}" needs at least 2 words for Salamanders. Please add more words or import a new list.`); return; }
       trueWord = choice(words);
       do { wrongWord = choice(words); } while (wrongWord === trueWord);
     }
@@ -195,7 +223,7 @@
       if(!category || !trueWord) return;
 
       // reset
-      players.forEach(p=>{ p.role='normal'; p.word=null; p.revealedWord=false; p.revealedRole=false; });
+      players.forEach(p=>{ p.role='normal'; p.word=null; p.revealed=false; });
 
       // assign roles
       const chamIndex = rand(players.length);
@@ -219,41 +247,95 @@
       renderPlayers();
     }
 
-    function hideAll(){ players.forEach(p=> { p.revealedWord = false; p.revealedRole = false; }); renderPlayers(); }
+    function hideAll(){ players.forEach(p=> p.revealed = false); renderPlayers(); }
 
     function newCategory(){
       const cats = Object.keys(WORDLIST);
       if(cats.length===0){ alert('No categories available.'); return; }
-      let attempts = 0; let next;
+      let attempts = 0;
+      let next;
       do { next = choice(cats); attempts++; } while(next===category && attempts<10);
       category = next;
       const words = WORDLIST[category];
-      if(!Array.isArray(words) || words.length < 2){ alert(`Category "${category}" needs at least 2 words.`); }
+      if(words.length < 2){ alert(`Category "${category}" needs at least 2 words.`); }
       trueWord = null; wrongWord = null;
-      players.forEach(p=>{ p.word=null; p.revealedWord=false; p.revealedRole=false; p.role='normal'; });
+      players.forEach(p=>{ p.word=null; p.revealed=false; p.role='normal'; });
       renderPlayers();
     }
 
     function exportSetup(){
       readNames();
-      const data = { players: players.map(p=>p.name), numSalamanders: parseInt($('#numSalamanders').value||'0',10) };
+      const data = {
+        players: players.map(p=>p.name),
+        numSalamanders: parseInt($('#numSalamanders').value||'0',10),
+        wordlist: WORDLIST,
+      };
       const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chameleon_setup.json'; a.click(); URL.revokeObjectURL(a.href);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'chameleon_setup.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
     }
 
-    // Init & Events
-    $('#numPlayers').addEventListener('change', updateNameInputs);
-    $('#numSalamanders').addEventListener('change', ()=>{});
-    $('#btnDeal').addEventListener('click', dealRound);
-    $('#btnHideAll').addEventListener('click', hideAll);
-    $('#btnNewDeck').addEventListener('click', newCategory);
-    $('#btnExport').addEventListener('click', exportSetup);
+    function exportWordlist(){
+      const lines = Object.entries(WORDLIST).map(([cat, words])=> `${cat}: ${words.join(', ')}`);
+      const blob = new Blob([lines.join('\n')], {type:'text/plain'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'wordlist.txt';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
 
-    (async function start(){
-      await loadCategories();
-      updateNameInputs();
-      newCategory();
-    })();
+    function importWordlist(){
+      const txt = $('#customData').value.trim();
+      if(!txt){ $('#importStatus').textContent = 'Nothing to import.'; return; }
+      const next = {};
+      const lines = txt.split(/\n+/);
+      for(const line of lines){
+        const m = line.match(/^\s*([^:]+):\s*(.+)$/);
+        if(!m) continue;
+        const cat = m[1].trim();
+        const words = m[2].split(',').map(w=>w.trim()).filter(Boolean);
+        if(words.length) next[cat] = words;
+      }
+      if(Object.keys(next).length===0){ $('#importStatus').textContent = 'Could not parse. Use "Category: word1, word2" per line.'; return; }
+      WORDLIST = next;
+      category = null; trueWord = null; wrongWord = null;
+      players.forEach(p=>{ p.role='normal'; p.word=null; p.revealed=false; });
+      $('#importStatus').textContent = `Imported ${Object.keys(WORDLIST).length} categories.`;
+      renderPlayers();
+    }
+
+    function clearNames(){
+      players.forEach((_,i)=>{ const inp=$('#name_'+i); if(inp) inp.value=''; });
+      readNames(); renderPlayers();
+    }
+
+    function shuffleNames(){
+      readNames();
+      shuffleInPlace(players);
+      renderPlayers();
+      // also shuffle the inputs to match displayed order
+      const values = players.map(p=>p.name);
+      values.forEach((v,i)=>{ const inp=$('#name_'+i); if(inp) inp.value=v; });
+    }
+
+    // ------------------------------
+    // Init & Events
+    // ------------------------------
+    $('#numPlayers').addEventListener('change', updateNameInputs);
+    $('#numSalamanders').addEventListener('change', ()=>{ /* no-op */ });
+    $('#btnDeal').addEventListener('click', dealRound);
+                $('#btnExportWords').addEventListener('click', exportWordlist);
+    $('#btnImport').addEventListener('click', importWordlist);
+    $('#btnClearNames').addEventListener('click', clearNames);
+    $('#btnShuffleNames').addEventListener('click', shuffleNames);
+
+    // start
+    updateNameInputs();
+    newCategory();
   </script>
 </body>
 </html>
