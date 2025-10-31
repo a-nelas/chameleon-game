@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chameleon (with Salamanders)</title>
+  <style>
+    :root { --bg:#0b1020; --panel:#131a31; --muted:#9aa7c7; --text:#e9eefc; --radius:14px; }
+    html,body{height:100%}
+    body{margin:0;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,Helvetica,Arial,"Apple Color Emoji","Segoe UI Emoji";
+      background:radial-gradient(1200px 800px at 10% 10%, #122044 0, var(--bg) 60%), var(--bg); color:var(--text);}
+    .container{max-width:980px;margin:0 auto;padding:28px 16px 60px;}
+    h1{font-size:clamp(24px,3vw,36px);margin:0 0 8px;letter-spacing:.4px}
+    p.sub{margin:0 0 16px;color:var(--muted)}
+    .grid{display:grid;gap:16px}
+    .two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media (max-width:760px){.two{grid-template-columns:1fr}}
+    .card{background:linear-gradient(180deg,#151b36 0%,var(--panel) 100%);border:1px solid #25305a;border-radius:var(--radius);padding:16px;box-shadow:0 6px 24px rgba(0,0,0,.25)}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    label{font-weight:600;font-size:14px}
+    input[type="number"],input[type="text"]{background:#0f142b;color:var(--text);border:1px solid #2a3566;border-radius:10px;padding:10px 12px;outline:none;width:100%;box-sizing:border-box}
+    input[type="number"]{max-width:110px}
+    .btn{appearance:none;border:1px solid #2b59ff44;background:linear-gradient(180deg,#2844a8,#203a96);color:white;padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer;transition:transform .06s ease, filter .15s ease}
+    .btn:hover{filter:brightness(1.05)} .btn:active{transform:translateY(1px)}
+    .btn.ghost{background:transparent;border-color:#3a476e;color:var(--muted)}
+    .btn.warn{background:linear-gradient(180deg,#9f2f45,#7b2234);border-color:#ff6a8b55}
+    .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid #2a3566;background:#0f142b;color:var(--muted);font-size:12px}
+    .list{display:grid;gap:8px}
+    .player{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:10px;border-radius:12px;background:#0f142b;border:1px solid #23305f}
+    .name{font-weight:700}
+    .reveal{font-variant-numeric:tabular-nums}
+    .muted{color:var(--muted)}
+    .tag{font-size:11px;padding:3px 8px;border-radius:999px;border:1px solid #2a3566;color:#c8d2f7;background:#0b1229;display:none}
+    .tag.cham{border-color:#5aa0ff66;color:#bcd6ff}
+    .tag.sala{border-color:#7bffb166;color:#d4ffe8}
+    .tag.norm{border-color:#ffd16666;color:#fff0c9}
+    .spacer{height:6px}
+    .title-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .cat{font-weight:800;letter-spacing:.5px}
+    .small{font-size:12px;color:var(--muted)}
+    .btns{display:flex;gap:8px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title-row">
+      <h1>🦎 Chameleon (with 🦎 Salamanders)</h1>
+      <button id="btnExport" class="btn ghost" title="Download current player list & settings">Export setup</button>
+    </div>
+    <p class="sub">Pass the device. Deal a category & secret word, randomly assign a Chameleon and Salamanders (who see a different word). Players reveal their own info only.</p>
+
+    <div class="grid two">
+      <section class="card" aria-labelledby="players-h">
+        <h2 id="players-h">Players</h2>
+        <div class="row" style="justify-content:space-between">
+          <label for="numPlayers">How many?</label>
+          <input id="numPlayers" type="number" min="2" max="16" value="6" />
+        </div>
+        <div class="spacer"></div>
+        <div class="row" style="justify-content:space-between">
+          <label for="numSalamanders">Salamanders</label>
+          <input id="numSalamanders" type="number" min="0" max="4" value="0" />
+        </div>
+        <div class="spacer"></div>
+        <div id="names" class="list" aria-live="polite"></div>
+        <div class="spacer"></div>
+        <div class="row">
+          <button id="btnClearNames" class="btn ghost" title="Clear all names">Clear</button>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="round-h">
+        <h2 id="round-h">Round</h2>
+        <div class="row" style="justify-content:space-between; align-items:flex-end;">
+          <div>
+            <div class="pill">Category <strong id="categoryLabel" class="cat" style="margin-left:8px;">—</strong></div>
+            <div class="small" id="wordCountInfo"></div>
+          </div>
+          <div class="row">
+            <button id="btnDeal" class="btn">Deal round</button>
+            <button id="btnHideAll" class="btn ghost" title="Hide all reveals">Hide all</button>
+            <button id="btnNewDeck" class="btn warn" title="Pick a fresh category">New category</button>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <div id="playersList" class="list" aria-live="polite"></div>
+      </section>
+    </div>
+
+    <p class="small">Each player taps <em>Reveal word</em> to see their word. The Chameleon sees a blank. Tap <em>Reveal role</em> only when you want to disclose roles.</p>
+  </div>
+
+  <script>
+    // Word list is loaded from categories.json (same folder as this file)
+    let WORDLIST = {};
+
+    async function loadCategories() {
+      try {
+        const url = new URL('./categories.json', window.location.href).toString();
+        const res = await fetch(url, { cache: 'no-store' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid JSON format');
+        WORDLIST = data;
+      } catch (e) {
+        alert('Could not load categories.json. Make sure the file is named exactly "categories.json" and is in the same folder as index.html.\\n\\nDetails: ' + e.message);
+        WORDLIST = {};
+      }
+    }
+
+    // State
+    let players = []; // { name, role, word, revealedWord, revealedRole }
+    let category = null;
+    let trueWord = null;
+    let wrongWord = null;
+
+    // Helpers
+    const $ = (sel, root=document)=> root.querySelector(sel);
+    const el = (tag, cls, text)=>{ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; };
+    const rand = (n)=> Math.floor(Math.random()*n);
+    const choice = (arr)=> arr[rand(arr.length)];
+
+    function updateNameInputs(){
+      const num = Math.max(2, Math.min(16, parseInt($('#numPlayers').value || '2', 10)));
+      $('#numPlayers').value = num;
+      const namesDiv = $('#names');
+      namesDiv.innerHTML = '';
+      for(let i=0;i<num;i++){
+        const wrap = el('div','row');
+        const lab = el('label'); lab.setAttribute('for','name_'+i); lab.textContent = `Player ${i+1}`;
+        const inp = el('input'); inp.type='text'; inp.id='name_'+i; inp.placeholder = `name ${i+1}`;
+        inp.value = players[i]?.name || '';
+        wrap.append(lab, inp);
+        namesDiv.append(wrap);
+      }
+      players = Array.from({length:num}, (_,i)=> ({ name: $('#name_'+i)?.value?.trim() || `Player ${i+1}`, role: 'normal', word: null, revealedWord: false, revealedRole: false }));
+      renderPlayers();
+    }
+
+    function readNames(){ players.forEach((p,i)=>{ const v = $('#name_'+i)?.value?.trim(); if(v) p.name = v; }); }
+    function shuffleInPlace(arr){ for(let i=arr.length-1;i>0;i--){ const j=rand(i+1); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+
+    function renderPlayers(){
+      const list = $('#playersList');
+      list.innerHTML = '';
+      players.forEach((p)=>{
+        const row = el('div','player');
+        const left = el('div');
+        const nm = el('div','name', p.name);
+        const roleTag = el('span','tag ' + (p.role==='chameleon'?'cham':(p.role==='salamander'?'sala':'norm')), p.role);
+        roleTag.style.display = p.revealedRole ? 'inline-block' : 'none';
+        const revealText = el('div','muted small reveal', p.revealedWord ? (p.word||'') : '— hidden —');
+        left.append(nm, roleTag, el('div',null,''), revealText);
+
+        const btnWrap = el('div','btns');
+        const btnWord = el('button','btn');
+        btnWord.textContent = p.revealedWord ? 'Hide word' : 'Reveal word';
+        btnWord.addEventListener('click', ()=>{
+          p.revealedWord = !p.revealedWord;
+          revealText.textContent = p.revealedWord ? (p.word||'') : '— hidden —';
+          btnWord.textContent = p.revealedWord ? 'Hide word' : 'Reveal word';
+        });
+
+        const btnRole = el('button','btn ghost');
+        btnRole.textContent = p.revealedRole ? 'Hide role' : 'Reveal role';
+        btnRole.addEventListener('click', ()=>{
+          p.revealedRole = !p.revealedRole;
+          roleTag.style.display = p.revealedRole ? 'inline-block' : 'none';
+          btnRole.textContent = p.revealedRole ? 'Hide role' : 'Reveal role';
+        });
+
+        btnWrap.append(btnWord, btnRole);
+        row.append(left, btnWrap);
+        list.append(row);
+      });
+
+      $('#categoryLabel').textContent = category || '—';
+      const words = category ? WORDLIST[category] : null;
+      $('#wordCountInfo').textContent = words ? `${words.length} words in this category` : '';
+    }
+
+    function pickCategoryAndWords(){
+      const cats = Object.keys(WORDLIST);
+      if(cats.length===0){ alert('No categories available. Ensure categories.json is present.'); return; }
+      category = choice(cats);
+      const words = WORDLIST[category];
+      if(!Array.isArray(words) || words.length < 2){ alert(`Category "${category}" needs at least 2 words for Salamanders.`); return; }
+      trueWord = choice(words);
+      do { wrongWord = choice(words); } while (wrongWord === trueWord);
+    }
+
+    function dealRound(){
+      readNames();
+      pickCategoryAndWords();
+      if(!category || !trueWord) return;
+
+      // reset
+      players.forEach(p=>{ p.role='normal'; p.word=null; p.revealedWord=false; p.revealedRole=false; });
+
+      // assign roles
+      const chamIndex = rand(players.length);
+      players[chamIndex].role = 'chameleon';
+
+      let numSala = Math.max(0, parseInt($('#numSalamanders').value || '0', 10));
+      numSala = Math.min(numSala, Math.max(0, players.length-1));
+
+      const indexes = players.map((_,i)=>i).filter(i=>i!==chamIndex);
+      shuffleInPlace(indexes);
+      const salaIndexes = indexes.slice(0, numSala);
+      salaIndexes.forEach(i=> players[i].role = 'salamander');
+
+      // assign words
+      players.forEach((p)=>{
+        if(p.role==='chameleon'){ p.word = ''; }
+        else if(p.role==='salamander'){ p.word = wrongWord; }
+        else { p.word = trueWord; }
+      });
+
+      renderPlayers();
+    }
+
+    function hideAll(){ players.forEach(p=> { p.revealedWord = false; p.revealedRole = false; }); renderPlayers(); }
+
+    function newCategory(){
+      const cats = Object.keys(WORDLIST);
+      if(cats.length===0){ alert('No categories available.'); return; }
+      let attempts = 0; let next;
+      do { next = choice(cats); attempts++; } while(next===category && attempts<10);
+      category = next;
+      const words = WORDLIST[category];
+      if(!Array.isArray(words) || words.length < 2){ alert(`Category "${category}" needs at least 2 words.`); }
+      trueWord = null; wrongWord = null;
+      players.forEach(p=>{ p.word=null; p.revealedWord=false; p.revealedRole=false; p.role='normal'; });
+      renderPlayers();
+    }
+
+    function exportSetup(){
+      readNames();
+      const data = { players: players.map(p=>p.name), numSalamanders: parseInt($('#numSalamanders').value||'0',10) };
+      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'chameleon_setup.json'; a.click(); URL.revokeObjectURL(a.href);
+    }
+
+    // Init & Events
+    $('#numPlayers').addEventListener('change', updateNameInputs);
+    $('#numSalamanders').addEventListener('change', ()=>{});
+    $('#btnDeal').addEventListener('click', dealRound);
+    $('#btnHideAll').addEventListener('click', hideAll);
+    $('#btnNewDeck').addEventListener('click', newCategory);
+    $('#btnExport').addEventListener('click', exportSetup);
+
+    (async function start(){
+      await loadCategories();
+      updateNameInputs();
+      newCategory();
+    })();
+  </script>
+</body>
+</html>

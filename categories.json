@@ -1,0 +1,13 @@
+{
+  "Fruits": ["apple", "banana", "orange", "grape", "mango", "pear", "peach", "kiwi", "pineapple", "plum", "cherry", "watermelon"],
+  "Animals": ["cat", "dog", "lion", "tiger", "elephant", "zebra", "giraffe", "whale", "shark", "eagle", "panda", "koala"],
+  "Countries": ["Portugal", "Spain", "France", "Germany", "Italy", "Brazil", "Japan", "Canada", "Australia", "Egypt", "Norway", "Mexico"],
+  "Sports": ["football", "basketball", "tennis", "golf", "rugby", "cricket", "volleyball", "swimming", "cycling", "boxing", "hockey", "baseball"],
+  "Jobs": ["doctor", "teacher", "engineer", "artist", "chef", "pilot", "nurse", "farmer", "writer", "lawyer", "musician", "firefighter"],
+  "Vehicles": ["car", "bus", "bicycle", "motorcycle", "train", "airplane", "ship", "submarine", "helicopter", "scooter", "van", "truck"],
+  "Desserts": ["cake", "ice cream", "cookie", "brownie", "pie", "pudding", "tart", "mousse", "cheesecake", "macaron", "donut", "crème brûlée"],
+  "Colors": ["red", "blue", "green", "yellow", "purple", "orange", "pink", "brown", "black", "white", "gray", "teal"],
+  "Instruments": ["guitar", "piano", "violin", "drums", "flute", "trumpet", "saxophone", "cello", "harp", "trombone", "clarinet", "ukulele"],
+  "Household Items": ["spoon", "fork", "knife", "plate", "glass", "sofa", "lamp", "mirror", "towel", "pillow", "broom", "kettle"],
+  "Weather": ["rain", "snow", "sunny", "cloudy", "wind", "storm", "fog", "hail", "thunder", "lightning", "drizzle", "breeze"]
+}
