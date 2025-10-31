@@ -63,27 +63,31 @@
       <h1>🦎 Chameleon Game 🦎</h1>
       
     </div>
-    <p class="sub">A local, pass‑the‑device helper for the social‑deduction word game. Deal a category & secret word, randomly assign a Chameleon, and (optionally) some Salamanders who see a different word.</p>
 
     <div class="grid two">
       <section class="card" aria-labelledby="players-h">
         <h2 id="players-h">Players</h2>
         <div class="row" style="justify-content:space-between">
           <label for="numPlayers">How many?</label>
-          <input id="numPlayers" type="number" min="2" max="16" value="6" />
+          <div class="row" style="margin-left:auto">
+            <button id="btnPMinus" class="btn ghost" type="button" aria-label="decrease players">−</button>
+            <span id="numPlayersDisplay">6</span>
+            <button id="btnPPlus" class="btn ghost" type="button" aria-label="increase players">+</button>
+          </div>
         </div>
         <div class="spacer"></div>
         <div class="row" style="justify-content:space-between">
           <label for="numSalamanders">Salamanders</label>
-          <input id="numSalamanders" type="number" min="0" max="4" value="0" />
+          <div class="row" style="margin-left:auto">
+            <button id="btnSMinus" class="btn ghost" type="button" aria-label="decrease salamanders">−</button>
+            <span id="numSalamandersDisplay">0</span>
+            <button id="btnSPlus" class="btn ghost" type="button" aria-label="increase salamanders">+</button>
+          </div>
         </div>
         <div class="spacer"></div>
         <div id="names" class="list" aria-live="polite"></div>
         <div class="spacer"></div>
-        <div class="row">
-          <button id="btnShuffleNames" class="btn ghost" title="Shuffle player order">Shuffle names</button>
-          <button id="btnClearNames" class="btn ghost" title="Clear all names">Clear</button>
-        </div>
+        
       </section>
 
       <section class="card" aria-labelledby="round-h">
@@ -104,47 +108,37 @@
       </section>
     </div>
 
-    <details class="card" style="margin-top:16px;">
-      <summary><strong>Custom categories (optional)</strong> — paste your own list</summary>
-      <p class="small">Format: one category per line as <code>Category: word1, word2, word3...</code>. Click <em>Import</em> to replace the built‑in list.</p>
-      <textarea id="customData" placeholder="Fruits: apple, banana, orange, peach\nAnimals: cat, dog, lion, whale"></textarea>
-      <div class="spacer"></div>
-      <div class="row">
-        <button id="btnImport" class="btn">Import</button>
-        <button id="btnExportWords" class="btn ghost">Export current wordlist</button>
-        <span class="small" id="importStatus"></span>
-      </div>
-    </details>
-
       </div>
 
   <script>
     // ------------------------------
-    // Data
+    // Categories (loaded from categories.json in the same folder)
     // ------------------------------
-    const DEFAULT_CATEGORIES = {
-      "Fruits": ["apple","banana","orange","grape","mango","pear","peach","kiwi","pineapple","plum","cherry","watermelon"],
-      "Animals": ["cat","dog","lion","tiger","elephant","zebra","giraffe","whale","shark","eagle","panda","koala"],
-      "Countries": ["Portugal","Spain","France","Germany","Italy","Brazil","Japan","Canada","Australia","Egypt","Norway","Mexico"],
-      "Sports": ["football","basketball","tennis","golf","rugby","cricket","volleyball","swimming","cycling","boxing","hockey","baseball"],
-      "Jobs": ["doctor","teacher","engineer","artist","chef","pilot","nurse","farmer","writer","lawyer","musician","firefighter"],
-      "Vehicles": ["car","bus","bicycle","motorcycle","train","airplane","ship","submarine","helicopter","scooter","van","truck"],
-      "Desserts": ["cake","ice cream","cookie","brownie","pie","pudding","tart","mousse","cheesecake","macaron","donut","crème brûlée"],
-      "Colors": ["red","blue","green","yellow","purple","orange","pink","brown","black","white","gray","teal"],
-      "Instruments": ["guitar","piano","violin","drums","flute","trumpet","saxophone","cello","harp","trombone","clarinet","ukulele"],
-      "Household Items": ["spoon","fork","knife","plate","glass","sofa","lamp","mirror","towel","pillow","broom","kettle"],
-      "Weather": ["rain","snow","sunny","cloudy","wind","storm","fog","hail","thunder","lightning","drizzle","breeze"]
-    };
+    let WORDLIST = {};
 
-    let WORDLIST = structuredClone(DEFAULT_CATEGORIES);
+    async function loadCategories(){
+      try{
+        const url = new URL('./categories.json', window.location.href).toString();
+        const res = await fetch(url, { cache: 'no-store' });
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        if(!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid JSON format');
+        WORDLIST = data;
+      } catch(err){
+        alert('Failed to load categories.json from the same folder. Ensure the file exists and is valid JSON.\n\nDetails: ' + err.message);
+        WORDLIST = {};
+      }
+    }
 
     // ------------------------------
     // State
     // ------------------------------
-    let players = []; // { name, role, word, revealed }
+    let players = []; // { name, role, word, revealedWord, revealedRole }
     let category = null;
     let trueWord = null;
     let wrongWord = null;
+    let currentPlayers = 6;
+    let currentSalamanders = 0;
 
     // ------------------------------
     // Helpers
@@ -154,9 +148,20 @@
     const rand = (n)=> Math.floor(Math.random()*n);
     const choice = (arr)=> arr[rand(arr.length)];
 
+    function renderCounts(){
+      const pd=$('#numPlayersDisplay'); if(pd) pd.textContent = String(currentPlayers);
+      const sd=$('#numSalamandersDisplay'); if(sd) sd.textContent = String(currentSalamanders);
+    }
+
+    function clampCounts(){
+      currentPlayers = Math.max(2, Math.min(16, currentPlayers));
+      currentSalamanders = Math.max(0, Math.min(currentPlayers-1, currentSalamanders));
+      renderCounts();
+    }
+
     function updateNameInputs(){
-      const num = Math.max(2, Math.min(16, parseInt($('#numPlayers').value || '2', 10)));
-      $('#numPlayers').value = num;
+      clampCounts();
+      const num = currentPlayers;
       const namesDiv = $('#names');
       namesDiv.innerHTML = '';
       for(let i=0;i<num;i++){
@@ -167,38 +172,44 @@
         wrap.append(lab, inp);
         namesDiv.append(wrap);
       }
-      players = Array.from({length:num}, (_,i)=> ({ name: $('#name_'+i)?.value?.trim() || `Player ${i+1}`, role: 'normal', word: null, revealed: false }));
+      players = Array.from({length:num}, (_,i)=> ({ name: $('#name_'+i)?.value?.trim() || `Player ${i+1}`, role: 'normal', word: null, revealedWord: false, revealedRole: false }));
       renderPlayers();
     }
 
-    function readNames(){
-      players.forEach((p,i)=>{ const v = $('#name_'+i)?.value?.trim(); if(v) p.name = v; });
-    }
-
-    function shuffleInPlace(arr){
-      for(let i=arr.length-1;i>0;i--){ const j=rand(i+1); [arr[i],arr[j]]=[arr[j],arr[i]]; }
-      return arr;
-    }
+    function readNames(){ players.forEach((p,i)=>{ const v = $('#name_'+i)?.value?.trim(); if(v) p.name = v; }); }
+    function shuffleInPlace(arr){ for(let i=arr.length-1;i>0;i--){ const j=rand(i+1); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
 
     function renderPlayers(){
       const list = $('#playersList');
       list.innerHTML = '';
-      players.forEach((p, idx)=>{
+      players.forEach((p)=>{
         const row = el('div','player');
         const left = el('div');
         const nm = el('div','name', p.name);
         const roleTag = el('span','tag ' + (p.role==='chameleon'?'cham':(p.role==='salamander'?'sala':'norm')), p.role);
-        roleTag.style.display = (trueWord? 'inline-block':'none'); // show roles only after dealing
-        const revealText = el('div','muted small reveal', p.revealed ? (p.word||'') : '— hidden —');
+        roleTag.style.display = p.revealedRole ? 'inline-block' : 'none';
+        const revealText = el('div','muted small reveal', p.revealedWord ? (p.word||'') : '— hidden —');
         left.append(nm, roleTag, el('div',null,''), revealText);
-        const btn = el('button','btn');
-        btn.textContent = p.revealed ? 'Hide' : 'Reveal';
-        btn.addEventListener('click', ()=>{
-          p.revealed = !p.revealed;
-          revealText.textContent = p.revealed ? (p.word||'') : '— hidden —';
-          btn.textContent = p.revealed ? 'Hide' : 'Reveal';
+
+        const btnWrap = el('div','btns');
+        const btnWord = el('button','btn');
+        btnWord.textContent = p.revealedWord ? 'Hide word' : 'Reveal word';
+        btnWord.addEventListener('click', ()=>{
+          p.revealedWord = !p.revealedWord;
+          revealText.textContent = p.revealedWord ? (p.word||'') : '— hidden —';
+          btnWord.textContent = p.revealedWord ? 'Hide word' : 'Reveal word';
         });
-        row.append(left, btn);
+
+        const btnRole = el('button','btn ghost');
+        btnRole.textContent = p.revealedRole ? 'Hide role' : 'Reveal role';
+        btnRole.addEventListener('click', ()=>{
+          p.revealedRole = !p.revealedRole;
+          roleTag.style.display = p.revealedRole ? 'inline-block' : 'none';
+          btnRole.textContent = p.revealedRole ? 'Hide role' : 'Reveal role';
+        });
+
+        btnWrap.append(btnWord, btnRole);
+        row.append(left, btnWrap);
         list.append(row);
       });
 
@@ -209,10 +220,10 @@
 
     function pickCategoryAndWords(){
       const cats = Object.keys(WORDLIST);
-      if(cats.length===0){ alert('No categories available. Import some in the Custom categories panel.'); return; }
+      if(cats.length===0){ alert('No categories available. Make sure categories.json exists next to this page.'); return; }
       category = choice(cats);
       const words = WORDLIST[category];
-      if(words.length < 2){ alert(`Category "${category}" needs at least 2 words for Salamanders. Please add more words or import a new list.`); return; }
+      if(!Array.isArray(words) || words.length < 2){ alert(`Category "${category}" needs at least 2 words for Salamanders.`); return; }
       trueWord = choice(words);
       do { wrongWord = choice(words); } while (wrongWord === trueWord);
     }
@@ -223,14 +234,13 @@
       if(!category || !trueWord) return;
 
       // reset
-      players.forEach(p=>{ p.role='normal'; p.word=null; p.revealed=false; });
+      players.forEach(p=>{ p.role='normal'; p.word=null; p.revealedWord=false; p.revealedRole=false; });
 
       // assign roles
       const chamIndex = rand(players.length);
       players[chamIndex].role = 'chameleon';
 
-      let numSala = Math.max(0, parseInt($('#numSalamanders').value || '0', 10));
-      numSala = Math.min(numSala, Math.max(0, players.length-1));
+      let numSala = Math.max(0, Math.min(players.length-1, currentSalamanders));
 
       const indexes = players.map((_,i)=>i).filter(i=>i!==chamIndex);
       shuffleInPlace(indexes);
@@ -247,95 +257,23 @@
       renderPlayers();
     }
 
-    function hideAll(){ players.forEach(p=> p.revealed = false); renderPlayers(); }
-
-    function newCategory(){
-      const cats = Object.keys(WORDLIST);
-      if(cats.length===0){ alert('No categories available.'); return; }
-      let attempts = 0;
-      let next;
-      do { next = choice(cats); attempts++; } while(next===category && attempts<10);
-      category = next;
-      const words = WORDLIST[category];
-      if(words.length < 2){ alert(`Category "${category}" needs at least 2 words.`); }
-      trueWord = null; wrongWord = null;
-      players.forEach(p=>{ p.word=null; p.revealed=false; p.role='normal'; });
-      renderPlayers();
-    }
-
-    function exportSetup(){
-      readNames();
-      const data = {
-        players: players.map(p=>p.name),
-        numSalamanders: parseInt($('#numSalamanders').value||'0',10),
-        wordlist: WORDLIST,
-      };
-      const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'chameleon_setup.json';
-      a.click();
-      URL.revokeObjectURL(a.href);
-    }
-
-    function exportWordlist(){
-      const lines = Object.entries(WORDLIST).map(([cat, words])=> `${cat}: ${words.join(', ')}`);
-      const blob = new Blob([lines.join('\n')], {type:'text/plain'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'wordlist.txt';
-      a.click();
-      URL.revokeObjectURL(a.href);
-    }
-
-    function importWordlist(){
-      const txt = $('#customData').value.trim();
-      if(!txt){ $('#importStatus').textContent = 'Nothing to import.'; return; }
-      const next = {};
-      const lines = txt.split(/\n+/);
-      for(const line of lines){
-        const m = line.match(/^\s*([^:]+):\s*(.+)$/);
-        if(!m) continue;
-        const cat = m[1].trim();
-        const words = m[2].split(',').map(w=>w.trim()).filter(Boolean);
-        if(words.length) next[cat] = words;
-      }
-      if(Object.keys(next).length===0){ $('#importStatus').textContent = 'Could not parse. Use "Category: word1, word2" per line.'; return; }
-      WORDLIST = next;
-      category = null; trueWord = null; wrongWord = null;
-      players.forEach(p=>{ p.role='normal'; p.word=null; p.revealed=false; });
-      $('#importStatus').textContent = `Imported ${Object.keys(WORDLIST).length} categories.`;
-      renderPlayers();
-    }
-
-    function clearNames(){
-      players.forEach((_,i)=>{ const inp=$('#name_'+i); if(inp) inp.value=''; });
-      readNames(); renderPlayers();
-    }
-
-    function shuffleNames(){
-      readNames();
-      shuffleInPlace(players);
-      renderPlayers();
-      // also shuffle the inputs to match displayed order
-      const values = players.map(p=>p.name);
-      values.forEach((v,i)=>{ const inp=$('#name_'+i); if(inp) inp.value=v; });
-    }
-
     // ------------------------------
     // Init & Events
     // ------------------------------
-    $('#numPlayers').addEventListener('change', updateNameInputs);
-    $('#numSalamanders').addEventListener('change', ()=>{ /* no-op */ });
     $('#btnDeal').addEventListener('click', dealRound);
-                $('#btnExportWords').addEventListener('click', exportWordlist);
-    $('#btnImport').addEventListener('click', importWordlist);
-    $('#btnClearNames').addEventListener('click', clearNames);
-    $('#btnShuffleNames').addEventListener('click', shuffleNames);
+
+    // plus/minus events
+    $('#btnPMinus').addEventListener('click', ()=>{ currentPlayers = Math.max(2, currentPlayers-1); clampCounts(); updateNameInputs(); });
+    $('#btnPPlus').addEventListener('click', ()=>{ currentPlayers = Math.min(16, currentPlayers+1); clampCounts(); updateNameInputs(); });
+    $('#btnSMinus').addEventListener('click', ()=>{ currentSalamanders = Math.max(0, currentSalamanders-1); clampCounts(); });
+    $('#btnSPlus').addEventListener('click', ()=>{ currentSalamanders = Math.min(currentPlayers-1, currentSalamanders+1); clampCounts(); });
 
     // start
-    updateNameInputs();
-    newCategory();
+    (async function start(){
+      await loadCategories();
+      clampCounts();
+      updateNameInputs();
+    })();
   </script>
 </body>
 </html>
