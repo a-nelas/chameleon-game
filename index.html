@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -55,13 +55,19 @@
     .cat { font-weight: 900; letter-spacing: .5px; font-size: 22px; color: var(--warning); text-transform: uppercase; }
     details summary { cursor: pointer; }
     .small { font-size: 12px; color: var(--muted); }
+
+    /* Category selector */
+    .checks { display:grid; gap:8px; grid-template-columns: repeat(2, minmax(0,1fr)); }
+    @media (max-width:760px){ .checks { grid-template-columns: 1fr; } }
+    .checkline { display:flex; align-items:center; gap:10px; background:#0f142b; border:1px solid #23305f; padding:8px 10px; border-radius:10px; }
+    .checkline input { width:18px; height:18px; accent-color:#6aa6ff; }
+    .toolbar { display:flex; gap:8px; align-items:center; justify-content:flex-end; margin-top:8px; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="title-row">
       <h1>🦎 Jogo do Camaleão 🦎</h1>
-      
     </div>
 
     <div class="grid two">
@@ -87,28 +93,36 @@
         <div class="spacer"></div>
         <div id="names" class="list" aria-live="polite"></div>
         <div class="spacer"></div>
-        
       </section>
 
       <section class="card" aria-labelledby="round-h">
         <h2 id="round-h">Jogo</h2>
-        <div class="row" style="justify-content:space-between; align-items:flex-end;">
+        <div class="row" style="justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px;">
           <div>
             <div class="pill">Categoria <strong id="categoryLabel" class="cat" style="margin-left:8px;">—</strong></div>
             <div class="small" id="wordCountInfo"></div>
           </div>
           <div class="row">
             <button id="btnDeal" class="btn">Jogar!</button>
-            
-            
           </div>
         </div>
+        <div class="spacer"></div>
+
+        <details id="catPanel">
+          <summary><strong>Selecionar categorias</strong> <span class="small" id="catSelInfo"></span></summary>
+          <div class="spacer"></div>
+          <div id="categorySelector" class="checks" aria-live="polite"></div>
+          <div class="toolbar">
+            <button id="btnAllCats" class="btn ghost" type="button">Selecionar todas</button>
+            <button id="btnNoCats" class="btn ghost" type="button">Limpar</button>
+          </div>
+        </details>
+
         <div class="spacer"></div>
         <div id="playersList" class="list" aria-live="polite"></div>
       </section>
     </div>
-
-      </div>
+  </div>
 
   <script>
     // ------------------------------
@@ -125,7 +139,7 @@
         if(!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid JSON format');
         WORDLIST = data;
       } catch(err){
-        alert('Failed to load categories.json from the same folder. Ensure the file exists and is valid JSON.\n\nDetails: ' + err.message);
+        alert('Falha ao carregar categories.json. Garanta que o ficheiro existe e é JSON válido. Detalhes: ' + err.message);
         WORDLIST = {};
       }
     }
@@ -139,6 +153,7 @@
     let wrongWord = null;
     let currentPlayers = 5;
     let currentSalamanders = 1;
+    let selectedCats = new Set();
 
     // ------------------------------
     // Helpers
@@ -215,15 +230,86 @@
 
       $('#categoryLabel').textContent = category || '—';
       const words = category ? WORDLIST[category] : null;
-      $('#wordCountInfo').textContent = words ? `${words.length} words in this category` : '';
+      $('#wordCountInfo').textContent = words ? `${words.length} palavras nesta categoria` : '';
     }
 
+    // ------------------------------
+    // Category Selection
+    // ------------------------------
+    function saveSelectedCats(){
+      try{ localStorage.setItem('selectedCats', JSON.stringify(Array.from(selectedCats))); }catch{}
+    }
+
+    function loadSelectedCats(){
+      try{
+        const raw = localStorage.getItem('selectedCats');
+        const saved = raw ? JSON.parse(raw) : null;
+
+        const validCats = Object.keys(WORDLIST).filter(k => !k.startsWith('_'));
+
+        if (Array.isArray(saved) && saved.length){
+          selectedCats = new Set(saved.filter(c => validCats.includes(c)));
+        } else {
+          const defs = Array.isArray(WORDLIST._defaults) ? WORDLIST._defaults : [];
+          selectedCats = new Set(defs.filter(c => validCats.includes(c)));
+        }
+      }catch{
+        selectedCats = new Set();
+      }
+    }
+
+    function renderCategorySelector(){
+      const holder = $('#categorySelector');
+      holder.innerHTML = '';
+
+      const cats = Object.keys(WORDLIST).filter(k => !k.startsWith('_'));
+
+      cats.forEach((c)=>{
+        const line = el('label','checkline');
+        const cb = el('input'); cb.type='checkbox'; cb.checked = selectedCats.has(c);
+        cb.addEventListener('change', ()=>{
+          if(cb.checked) selectedCats.add(c); else selectedCats.delete(c);
+          updateCatSelInfo();
+          saveSelectedCats();
+        });
+        const span = el('span', null, `${c} `);
+        const count = WORDLIST[c]?.length ?? 0;
+        const small = el('span','small', `(${count})`);
+        line.append(cb, span, small);
+        holder.append(line);
+      });
+
+      updateCatSelInfo();
+    }
+
+    function updateCatSelInfo(){
+      const total = Object.keys(WORDLIST).filter(k => !k.startsWith('_')).length;
+      const sel = Array.from(selectedCats).filter(k => !k.startsWith('_')).length;
+      $('#catSelInfo').textContent = `— ${sel}/${total} selecionadas`;
+    }
+
+    function selectAllCats(){
+      const cats = Object.keys(WORDLIST).filter(k => !k.startsWith('_'));
+      selectedCats = new Set(cats);
+      renderCategorySelector();
+      saveSelectedCats();
+    }
+
+    function clearAllCats(){
+      selectedCats.clear();
+      renderCategorySelector();
+      saveSelectedCats();
+    }
+
+    // ------------------------------
+    // Game Logic
+    // ------------------------------
     function pickCategoryAndWords(){
-      const cats = Object.keys(WORDLIST);
-      if(cats.length===0){ alert('No categories available. Make sure categories.json exists next to this page.'); return; }
+      const cats = Array.from(selectedCats);
+      if(cats.length===0){ alert('Nenhuma categoria selecionada. Selecione pelo menos uma.'); return; }
       category = choice(cats);
       const words = WORDLIST[category];
-      if(!Array.isArray(words) || words.length < 2){ alert(`Category "${category}" needs at least 2 words for Salamanders.`); return; }
+      if(!Array.isArray(words) || words.length < 2){ alert(`A categoria "${category}" precisa de pelo menos 2 palavras.`); return; }
       trueWord = choice(words);
       do { wrongWord = choice(words); } while (wrongWord === trueWord);
     }
@@ -268,11 +354,16 @@
     $('#btnSMinus').addEventListener('click', ()=>{ currentSalamanders = Math.max(0, currentSalamanders-1); clampCounts(); });
     $('#btnSPlus').addEventListener('click', ()=>{ currentSalamanders = Math.min(currentPlayers-1, currentSalamanders+1); clampCounts(); });
 
+    $('#btnAllCats').addEventListener('click', selectAllCats);
+    $('#btnNoCats').addEventListener('click', clearAllCats);
+
     // start
     (async function start(){
       await loadCategories();
+      loadSelectedCats();
       clampCounts();
       updateNameInputs();
+      renderCategorySelector();
     })();
   </script>
 </body>
