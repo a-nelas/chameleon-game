@@ -44,15 +44,15 @@
     .list { display: grid; gap: 8px; }
     .player { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: #0f142b; border: 1px solid #23305f; }
     .name { font-weight: 700; }
-    .reveal { font-variant-numeric: tabular-nums; font-size: 20px; color: var(--accent-2); font-weight: 700; }
+    .reveal { font-variant-numeric: tabular-nums; font-size: 16px; color: var(--warning); font-weight: 700; }
     .muted { color: var(--muted); }
     .tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid #2a3566; color: #c8d2f7; background: #0b1229; }
-    .tag.cham { border-color: #5aa0ff66; color: #bcd6ff; }
-    .tag.sala { border-color: #7bffb166; color: #d4ffe8; }
-    .tag.norm { border-color: #ffd16666; color: #fff0c9; }
+    .tag.cham { border-color: #28c76f66; color: #28c76f; }
+    .tag.sala { border-color: #1dd3c666; color: #1dd3c6; }
+    .tag.norm { border-color: #ffffff66; color: #f8f8f8; }
     .spacer { height: 6px; }
     .title-row { display:flex; align-items:center; justify-content:space-between; gap: 10px; }
-    .cat { font-weight: 900; letter-spacing: .5px; font-size: 22px; color: var(--warning); text-transform: uppercase; }
+    .cat { font-weight: 900; letter-spacing: .5px; font-size: 20px; color: var(--warning); text-transform: uppercase; }
     details summary { cursor: pointer; }
     .small { font-size: 12px; color: var(--muted); }
 
@@ -203,7 +203,7 @@
         const nm = el('div','name', p.name);
         const roleTag = el('span','tag ' + (p.role==='Camaleão'?'cham':(p.role==='Salamandra'?'sala':'norm')), p.role);
         roleTag.style.display = p.revealedRole ? 'inline-block' : 'none';
-        const revealText = el('div','muted small reveal', p.revealedWord ? (p.word||'') : '—————');
+        const revealText = el('div','reveal', p.revealedWord ? (p.word||'') : '————');
         left.append(nm, roleTag, el('div',null,''), revealText);
 
         const btnWrap = el('div','btns');
@@ -211,7 +211,7 @@
         btnWord.textContent = p.revealedWord ? 'Esconder palavra' : 'Revelar palavra';
         btnWord.addEventListener('click', ()=>{
           p.revealedWord = !p.revealedWord;
-          revealText.textContent = p.revealedWord ? (p.word||'') : '—————';
+          revealText.textContent = p.revealedWord ? (p.word||'') : '————';
           btnWord.textContent = p.revealedWord ? 'Esconder palavra' : 'Revelar palavra';
         });
 
