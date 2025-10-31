@@ -40,6 +40,7 @@
     .btn:active { transform: translateY(1px); }
     .btn.ghost { background: transparent; border-color: #3a476e; color: var(--muted); }
     .btn.warn { background: linear-gradient(180deg, #9f2f45, #7b2234); border-color: #ff6a8b55; }
+    .btn.big { padding: 20px 20px; font-size: 18px; }
     .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 999px; border: 1px solid #2a3566; background: #0f142b; color: var(--muted); font-size: 12px; }
     .list { display: grid; gap: 8px; }
     .player { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: #0f142b; border: 1px solid #23305f; }
@@ -103,7 +104,7 @@
             <div class="small" id="wordCountInfo"></div>
           </div>
           <div class="row">
-            <button id="btnDeal" class="btn">Jogar!</button>
+            <button id="btnDeal" class="btn big">Jogar!</button>
           </div>
         </div>
         <div class="spacer"></div>
@@ -187,7 +188,7 @@
         wrap.append(lab, inp);
         namesDiv.append(wrap);
       }
-      players = Array.from({length:num}, (_,i)=> ({ name: $('#name_'+i)?.value?.trim() || `Jogador ${i+1}`, role: 'Normal', word: null, revealedWord: false, revealedRole: false }));
+      players = Array.from({length:num}, (_,i)=> ({ name: $('#name_'+i)?.value?.trim() || '', role: 'Normal', word: null, revealedWord: false, revealedRole: false }));
       renderPlayers();
     }
 
@@ -289,8 +290,9 @@
     }
 
     function selectAllCats(){
-      const cats = Object.keys(WORDLIST).filter(k => !k.startsWith('_'));
-      selectedCats = new Set(cats);
+      const defs = Array.isArray(WORDLIST._defaults) ? WORDLIST._defaults : [];
+      const validCats = Object.keys(WORDLIST).filter(k => !k.startsWith('_'));
+      selectedCats = new Set(defs.filter(c => validCats.includes(c)));
       renderCategorySelector();
       saveSelectedCats();
     }
