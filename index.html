@@ -44,7 +44,7 @@
     .list { display: grid; gap: 8px; }
     .player { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; background: #0f142b; border: 1px solid #23305f; }
     .name { font-weight: 700; }
-    .reveal { font-variant-numeric: tabular-nums; }
+    .reveal { font-variant-numeric: tabular-nums; font-size: 20px; color: var(--accent-2); font-weight: 700; }
     .muted { color: var(--muted); }
     .tag { font-size: 11px; padding: 3px 8px; border-radius: 999px; border: 1px solid #2a3566; color: #c8d2f7; background: #0b1229; }
     .tag.cham { border-color: #5aa0ff66; color: #bcd6ff; }
@@ -52,7 +52,7 @@
     .tag.norm { border-color: #ffd16666; color: #fff0c9; }
     .spacer { height: 6px; }
     .title-row { display:flex; align-items:center; justify-content:space-between; gap: 10px; }
-    .cat { font-weight: 800; letter-spacing: .5px; }
+    .cat { font-weight: 900; letter-spacing: .5px; font-size: 22px; color: var(--warning); text-transform: uppercase; }
     details summary { cursor: pointer; }
     .small { font-size: 12px; color: var(--muted); }
   </style>
@@ -68,16 +68,16 @@
       <section class="card" aria-labelledby="players-h">
         <h2 id="players-h">Players</h2>
         <div class="row" style="justify-content:space-between">
-          <label for="numPlayers">How many?</label>
+          <label for="numPlayers">How many players?</label>
           <div class="row" style="margin-left:auto">
             <button id="btnPMinus" class="btn ghost" type="button" aria-label="decrease players">−</button>
-            <span id="numPlayersDisplay">6</span>
+            <span id="numPlayersDisplay">5</span>
             <button id="btnPPlus" class="btn ghost" type="button" aria-label="increase players">+</button>
           </div>
         </div>
         <div class="spacer"></div>
         <div class="row" style="justify-content:space-between">
-          <label for="numSalamanders">Salamanders</label>
+          <label for="numSalamanders">How many salamanders?</label>
           <div class="row" style="margin-left:auto">
             <button id="btnSMinus" class="btn ghost" type="button" aria-label="decrease salamanders">−</button>
             <span id="numSalamandersDisplay">0</span>
@@ -137,7 +137,7 @@
     let category = null;
     let trueWord = null;
     let wrongWord = null;
-    let currentPlayers = 6;
+    let currentPlayers = 5;
     let currentSalamanders = 0;
 
     // ------------------------------
